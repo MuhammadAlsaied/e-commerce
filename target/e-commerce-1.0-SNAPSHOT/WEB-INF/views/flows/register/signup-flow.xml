@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow
+                          http://www.springframework.org/schema/webflow/spring-webflow.xsd">
+    
+    
+    <var name="user" class="onlineshopping.dto.User" />
+    <var name="billing" class="onlineshopping.dto.Address" />
+    <on-start>
+        <evaluate expression="registerHandler.init()" result="flowScope.registerModel" />
+    </on-start>
+    <view-state id="signup" view="flows/register/signup" model="user" >
+        <transition on="billing" to="validate"></transition>
+    </view-state>
+    <action-state id="validate">
+        <evaluate expression="registerHandler.validate(user,messageContext)"/>
+        <transition on="yes" to="billing" />
+        <transition on="no" to="signup" />
+    </action-state>
+    <view-state id="billing" view="flows/register/billing" model="billing">
+        <transition on="signup" to="signup"></transition>
+        <transition on="confirm" to="confirm">
+            <evaluate  expression="flowScope.registerModel.setUser(user)"  />
+            <evaluate  expression="flowScope.registerModel.setAddress(billing)"  />
+        </transition>
+        
+    </view-state>
+    <view-state id="confirm" view="flows/register/confirm">
+        <transition on="billing" to="billing"></transition>
+        <transition on="signup" to="signup"></transition>
+        <transition on="submit" to="submit"></transition>        
+    </view-state>
+    
+    <action-state id="submit" >
+        <evaluate expression="registerHandler.addUser(flowScope.registerModel)" />
+        <transition on="yes" to="success" /> 
+    </action-state>
+    <end-state id="home" view="externalRedirect:contextRelative:/" />
+    <end-state id="success" view="flows/register/success" />
+    <global-transitions>
+        <transition on="home" to="home" validate="false"></transition>
+    </global-transitions>
+    
+</flow>
